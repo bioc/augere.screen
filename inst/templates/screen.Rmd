@@ -5,13 +5,13 @@ Samples that are closer together on the plot are more similar in their expressio
 or more specifically, the most extreme log-fold changes are closer to zero.
 
 :BEGIN mds-grouped
-```{r, fig.cap="MDS plot of the dataset. Each point represents a sample and is named/colored according to its group(s) of origin."}
+```{r plot-mds, fig.cap="MDS plot of the dataset. Each point represents a sample and is named/colored according to its group(s) of origin."}
 mds.labels <- factor(model.data$group.)
 limma::plotMDS(y.cpm, labels=as.character(mds.labels), col=as.integer(mds.labels))
 ```
 :END
 :BEGIN mds-ungrouped
-```{r, fig.cap="MDS plot of the dataset. Each point represents a sample."}
+```{r plot-mds, fig.cap="MDS plot of the dataset. Each point represents a sample."}
 limma::plotMDS(y.cpm)
 ```
 :END
@@ -70,7 +70,7 @@ summary(fit$df.prior)
 We examine the mean-variance relationship for the shrunk estimates.
 Ideally, there should be no trend at all as it should have been handled by the observation weights.
 
-```{r, fig.cap="Residual standard deviation (sigma) plotted against the mean log-CPM. Each point represents a barcode<%= EXTRA_EB_CAPT %>."}
+```{r plot-sa, fig.cap="Residual standard deviation (sigma) plotted against the mean log-CPM. Each point represents a barcode<%= EXTRA_EB_CAPT %>."}
 limma::plotSA(fit)
 ```
 
@@ -190,11 +190,11 @@ summary(tab$FDR <= 0.05)
 
 Now making some diagnostic plots.
 
-```{r, fig.cap='Mean-difference plot for this contrast. Each point represents a gene and is colored according to whether it was significantly up- or down-regulated at an FDR of 5%.', eval=is.null(dim(con)), echo=is.null(dim(con))}
+```{r plot-md-<%= CONTRAST_INDEX %>, fig.cap='Mean-difference plot for this contrast. Each point represents a gene and is colored according to whether it was significantly up- or down-regulated at an FDR of 5%.', eval=is.null(dim(con)), echo=is.null(dim(con))}
 limma::plotMD(fit2, status=limma::decideTests(fit2), hl.cex=0.5)
 ```
 
-```{r, fig.cap='Volcano plot for this contrast. Each point represents a barcode, colored according to whether it was significantly up- or down-regulated at an FDR of 5%. The dotted line represents the effective $p$-value threshold for significance.', eval=is.null(dim(con)), echo=is.null(dim(con))}
+```{r plot-volcano-<%= CONTRAST_INDEX %>, fig.cap='Volcano plot for this contrast. Each point represents a barcode, colored according to whether it was significantly up- or down-regulated at an FDR of 5%. The dotted line represents the effective $p$-value threshold for significance.', eval=is.null(dim(con)), echo=is.null(dim(con))}
 limma::volcanoplot(fit2)
 is.de <- tab$FDR <= 0.05
 if (any(is.de, na.rm=TRUE)) {

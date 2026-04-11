@@ -88,7 +88,7 @@ hist(y$samples$norm.factors)
 We inspect the normalization results by creating MD (mean-difference) plots.
 Ideally, the log-fold changes for most control barcodes should be centered around zero if the normalization was successful.
 
-```{r, fig.wide=TRUE, fig.asp=1/3, fig.cap="Mean-difference plots for each sample against the average reference of all other samples. Each plot corresponds to a sample while each point represents a barcode, with control barcodes highlighted in red."}
+```{r plot-md-norm, fig.wide=TRUE, fig.asp=1/3, fig.cap="Mean-difference plots for each sample against the average reference of all other samples. Each plot corresponds to a sample while each point represents a barcode, with control barcodes highlighted in red."}
 y.cpm <- edgeR::cpm(y, log=TRUE, prior.count=3)
 
 # Avoid creating too many plots, otherwise the compiled report is too big.
@@ -134,7 +134,7 @@ hist(y$samples$norm.factors)
 We inspect the normalization results by creating MD (mean-difference) plots.
 Ideally, the log-fold changes for most barcodes should be centered around zero if the normalization was successful.
 
-```{r, fig.wide=TRUE, fig.asp=1/3, fig.cap="Mean-difference plots for each sample against the average reference of all other samples. Each plot corresponds to a sample while each point represents a barcode."}
+```{r plot-md-norm, fig.wide=TRUE, fig.asp=1/3, fig.cap="Mean-difference plots for each sample against the average reference of all other samples. Each plot corresponds to a sample while each point represents a barcode."}
 y.cpm <- edgeR::cpm(y, log=TRUE, prior.count=3)
 
 # Avoid creating too many plots, otherwise the compiled report is too big.

@@ -218,7 +218,8 @@ runScreen <- function(
     output.dir = "voom",
     author = NULL,
     dry.run = FALSE,
-    save.results = TRUE
+    save.results = TRUE,
+    suppress.plots = FALSE
 ) {
     restore.fun <- resetInputCache()
     on.exit(restore.fun(), after=FALSE, add=TRUE)
@@ -322,6 +323,7 @@ runScreen <- function(
 
     contrasts <- vector("list", length(contrast.info))
     save.names <- character()
+    fig.chunks <- character()
     author.txt <- deparseToString(as.list(author))
     replacements$AUTHOR <- author.txt
 
@@ -494,8 +496,15 @@ runScreen <- function(
                 EB_OPTS=replacements$EB_OPTS,
                 CONTRAST_NAME_SIMPLE=current$title,
                 CONTRAST_NAME_DEPARSED=deparseToString(current$title),
+                CONTRAST_INDEX=i,
                 SAVING_CHUNK_NAME=save.name
             )
+        )
+
+        fig.chunks <- c(
+            fig.chunks,
+            paste0("plot-md-", i),
+            paste0("plot-volcano-", i)
         )
     }
 
@@ -523,8 +532,19 @@ runScreen <- function(
     } else {
         skip.chunks <- c("save-directory", save.names, "save-norm")
     }
+
+    if (suppress.plots) {
+        skip.chunks <- c(
+            skip.chunks,
+            "plot-md-norm",
+            "plot-mds",
+            "plot-sa",
+            fig.chunks
+        )
+    }
+
     env <- new.env()
-    compileReport(fname, env=env, skip.chunks=skip.chunks)
+    compileReport(fname, env=env, skip.chunks=skip.chunks, suppress.plots=suppress.plots)
 
     gene.info <- list(
         simes=env$all.simes,
