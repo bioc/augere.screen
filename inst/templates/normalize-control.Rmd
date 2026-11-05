@@ -1,0 +1,118 @@
+# Normalization {.tabset}
+
+We create a subset of control barcodes that should not change in abundance between samples.
+These barcodes are typically non-targeting controls or they target genes that are not involved in survival/proliferation.
+
+```{r}
+use.for.norm <- logical(nrow(y))
+norm.features <- character(0)
+```
+
+:BEGIN barcodes
+We add a pre-defined set of control barcodes:
+
+```{r}
+norm.barcodes <- <%= NORM_BARCODES %>
+use.for.norm.barcodes <- rownames(y) %in% unlist(norm.barcodes)
+summary(use.for.norm.barcodes)
+use.for.norm[use.for.norm.barcodes] <- TRUE
+norm.features <- c(norm.features, names(norm.barcodes))
+```
+:END
+
+:BEGIN genes
+We add all barcodes associated with a pre-defined set of control genes:
+
+```{r}
+norm.genes <- <%= NORM_GENES %>
+use.for.norm.genes <- SummarizedExperiment::rowData(se)[y$genes$origin, <%= NORM_GENE_FIELD %>] %in% unlist(norm.genes)
+summary(use.for.norm.genes)
+use.for.norm[use.for.norm.genes] <- TRUE 
+norm.features <- c(norm.features, names(norm.genes))
+```
+:END
+
+:BEGIN types
+We add control barcodes based on the row annotation in the `SummarizedExperiment`:
+
+```{r}
+norm.types <- <%= NORM_TYPES %>
+use.for.norm.types <- SummarizedExperiment::rowData(se)[y$genes$origin, <%= NORM_TYPE_FIELD %>] %in% norm.types
+summary(use.for.norm.types)
+use.for.norm[use.for.norm.types] <- TRUE
+norm.features <- c(norm.features, norm.types)
+```
+:END
+
+We look at the total number of control barcodes:
+
+```{r}
+stopifnot(any(use.for.norm)) # make sure we have at least some controls.
+norm.features <- paste(norm.features, collapse=', ')
+summary(use.for.norm)
+```
+
+:BEGIN tmm
+We define a normalization factor for each sample with the TMM method across all control barcodes.
+The assumption is that most of these barcodes not exhibit any differences between samples;
+any systematic differences across many barcodes are assumed to be technical and removed.
+
+```{r}
+# Preserve the library sizes as normalization factors should only be
+# interpreted in the context of the library sizes used to compute them.
+ysub <- edgeR::normLibSizes(y[use.for.norm,,keep.lib.sizes=TRUE])
+stopifnot(identical(ysub$samples$lib.size, y$sample$lib.size))
+
+y$samples$norm.factors <- ysub$samples$norm.factors
+norm.meta <- paste0('TMM on controls (', norm.features, ')')
+head(y$samples)
+```
+
+The TMM normalization factors account for composition biases that are not reflected in the relative library sizes.
+Specifically, composition biases are introduced when upregulation of some genes in one sample reduces the sequencing resources available for other genes.
+This shifts the log-fold changes and causes spurious DE when that sample is compared to other samples with less upregulation.
+`r BiocStyle::Biocpkg("edgeR")` handles this by computing effective library sizes (`lib.size` scaled by `norm.factors`),
+which represent the combined effect of library size differences and composition biases.
+
+```{r}
+nf <- y$samples$norm.factors
+names(nf) <- colnames(y)
+nf <- sort(nf)
+head(nf) # samples with lowest factors have more upregulated genes
+tail(nf) # samples with highest factors have fewer upregulated genes
+```
+:END
+
+:BEGIN lib
+We define a normalization factor for each sample based on the sequencing depth (i.e., total counts) across all control barcodes.
+Our assumption is that the control barcodes should not change in abundance across samples,
+thus any difference in coverage is technical in nature and should be normalized away via scaling.
+
+```{r, fig.wide=TRUE}
+# The actual scaling applied to each library is proportional to the effective
+# library size, i.e., the product of the library size and normalization factor.
+# So, if we want to scale by the sum of control counts, we define the
+# normalization factors as the ratio to the library sizes.
+ratio <- colSums(y$counts[use.for.norm,,drop=FALSE])/y$samples$lib.size
+
+# Scaled to a geometric mean of 1 to preserve the scale of the library sizes. 
+y$samples$norm.factors <- ratio/exp(mean(log(ratio)))
+
+norm.meta <- paste0('library size on controls (', norm.features, ')')
+head(y$samples)
+```
+:END 
+
+We inspect the normalization results by creating MD (mean-difference) plots.
+Ideally, the log-fold changes for most control barcodes should be centered around zero if the normalization was successful.
+
+```{r plot-md-norm, results="asis"}
+y.cpm <- edgeR::cpm(y, log=TRUE, prior.count=3)
+
+# Avoid creating too many plots, otherwise the compiled report is too big.
+for (i in seq_len(min(9, ncol(y.cpm)))) {
+    cat(paste0("\n\n## ", i, " {-}\n"))
+    limma::plotMD(y.cpm, column=i, status=as.integer(use.for.norm))
+    abline(h=0, col='red', lty=2)
+}
+```

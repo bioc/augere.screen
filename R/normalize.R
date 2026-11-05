@@ -7,29 +7,25 @@
     norm.control.types,
     norm.tmm
 ) {
-    template <- system.file("templates", "normalize.Rmd", package="augere.screen", mustWork=TRUE)
-    parsed <- parseRmdTemplate(readLines(template))
-
     if (
         !is.null(norm.control.barcodes) || 
         (!is.null(norm.control.gene.field) && !is.null(norm.control.genes)) ||
         (!is.null(norm.control.type.field) && !is.null(norm.control.types))
     ) {
-        parsed[["norm-all"]] <- NULL
-        parsed[["norm-none"]] <- NULL
-        current <- parsed[["norm-control"]]
+        template <- system.file("templates", "normalize-control.Rmd", package="augere.screen", mustWork=TRUE)
+        parsed <- parseRmdTemplate(readLines(template))
 
         if (is.null(norm.control.barcodes)) {
-            current[["barcodes"]] <- NULL
+            parsed[["barcodes"]] <- NULL
         } else {
-            current[["barcodes"]] <- replacePlaceholders(current[["barcodes"]], list(NORM_BARCODES=deparseToString(norm.control.barcodes)))
+            parsed[["barcodes"]] <- replacePlaceholders(parsed[["barcodes"]], list(NORM_BARCODES=deparseToString(norm.control.barcodes)))
         }
 
         if (is.null(norm.control.gene.field) || is.null(norm.control.genes)) {
-            current[["genes"]] <- NULL
+            parsed[["genes"]] <- NULL
         } else {
-            current[["genes"]] <- replacePlaceholders(
-                current[["genes"]],
+            parsed[["genes"]] <- replacePlaceholders(
+                parsed[["genes"]],
                 list(
                     NORM_GENE_FIELD=deparseToString(norm.control.gene.field),
                     NORM_GENES=deparseToString(norm.control.genes)
@@ -38,10 +34,10 @@
         }
 
         if (is.null(norm.control.type.field) || is.null(norm.control.types)) {
-            current[["types"]] <- NULL
+            parsed[["types"]] <- NULL
         } else {
-            current[["types"]] <- replacePlaceholders(
-                current[["types"]],
+            parsed[["types"]] <- replacePlaceholders(
+                parsed[["types"]],
                 list(
                     NORM_TYPE_FIELD=deparseToString(norm.control.type.field),
                     NORM_TYPES=deparseToString(norm.control.types)
@@ -49,26 +45,15 @@
             )
         }
 
-        if (norm.tmm) {
-            current[["lib"]] <- NULL
-        } else {
-            current[["tmm"]] <- NULL
-        }
-
-        parsed[["norm-control"]] <- current
-
     } else {
-        parsed[["norm-control"]] <- NULL
-        parsed[["norm-none"]] <- NULL
-        current <- parsed[["norm-all"]]
+        template <- system.file("templates", "normalize-all.Rmd", package="augere.screen", mustWork=TRUE)
+        parsed <- parseRmdTemplate(readLines(template))
+    }
 
-        if (norm.tmm) {
-            current[["lib"]] <- NULL
-        } else {
-            current[["tmm"]] <- NULL
-        }
-
-        parsed[["norm-all"]] <- current
+    if (norm.tmm) {
+        parsed[["lib"]] <- NULL
+    } else {
+        parsed[["tmm"]] <- NULL
     }
 
     unlist(parsed, use.names=FALSE)

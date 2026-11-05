@@ -37,6 +37,13 @@ test_that("runScreen works with defaults, no genes", {
     roundtrip <- augere.core::readResult(file.path(output, "results", "normalized"))
     expect_identical(dimnames(roundtrip$x), dimnames(res$normalized))
     expect_match(roundtrip$metadata$title, "Normalized")
+
+    # Checking that the report has the correct voom parametrization.
+    fname <- readLines(file.path(output, "report.Rmd"))
+    expect_true(any(grepl("sample.weights=TRUE", fname, fixed=TRUE)))
+    expect_false(any(grepl("block=", fname, fixed=TRUE)))
+    expect_true(any(grepl("robust=TRUE", fname, fixed=TRUE)))
+    expect_false(any(grepl("trend=TRUE", fname, fixed=TRUE)))
 })
 
 test_that("runScreen works with default genes", {
@@ -174,8 +181,8 @@ test_that("runScreen works with duplicateCorrelation", {
     out <- runScreen(se, group="group", comparisons=c("C", "A"), dc.block="batch", gene.field="gene", output.dir=tmp, suppress.plots=TRUE, save.results=FALSE)
 
     fname <- readLines(file.path(tmp, "report.Rmd"))
-    expect_true(any(grepl("duplicateCorrelation(", fname, fixed=TRUE)))
-    expect_gte(sum(grepl("block=dc.block,", fname, fixed=TRUE)), 3) # remember, it's used in fry() as well. 
+    expect_gte(sum(grepl("block=dc.block,", fname, fixed=TRUE)), 2) # remember, it's used in fry() as well. 
+    expect_true(any(grepl("correlation=fit", fname, fixed=TRUE)))
 })
 
 test_that("runScreen works with no consolidation methods", {
@@ -239,8 +246,7 @@ test_that("runScreen works with some of the other voom-related options", {
     out <- runScreen(se, group="group", comparisons=c("C", "A"), robust=FALSE, trend=TRUE, quality=FALSE, gene.field="gene", output.dir=tmp, suppress.plots=TRUE, save.results=FALSE)
 
     fname <- readLines(file.path(tmp, "report.Rmd"))
-    expect_false(any(grepl("voomWithQualityWeights(", fname, fixed=TRUE)))
-    expect_true(any(grepl("voom(", fname, fixed=TRUE)))
+    expect_false(any(grepl("sample.weights=TRUE", fname, fixed=TRUE)))
     expect_true(any(grepl("trend=TRUE", fname, fixed=TRUE)))
     expect_false(any(grepl("robust=TRUE", fname, fixed=TRUE)))
 })

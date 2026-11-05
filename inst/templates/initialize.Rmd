@@ -66,9 +66,9 @@ Finally, we build the design matrix.
 :BEGIN ref-filtering
 We filter out barcodes that were not present in the original pool, e.g., due to manufacturing defects in the screen library.
 We use a subset of reference samples to compute the abundances in the pool,
-and we define a threshold on the log-average CPM by defining small outliers based on the median absolute deviation.
+and we define a threshold on the log-average counts-per-million (CPM) by defining small outliers based on the median absolute deviation.
 
-```{r}
+```{r ab-hist, fig.cap="Distribution of the average log-CPMs for all barcodes."}
 is.ref <- SummarizedExperiment::colData(original)[[<%= REFERENCE_FIELD %>]] %in% <%= REFERENCE_LEVELS %>
 summary(is.ref)
 
@@ -79,7 +79,6 @@ hist(ref.ab, xlab="Reference average log-CPM")
 
 # Defining the threshold. 
 ref.med.ab <- median(ref.ab)
-ref.med.ab
 ref.mad.ab <- mad(ref.ab, center=ref.med.ab)
 ref.threshold <- ref.med.ab - <%= NUM_MADS %> * ref.mad.ab
 ref.threshold
@@ -105,7 +104,7 @@ y <- y[filtered,]
 summary(filtered)
 ```
 
-The minimum threshold is defined as a CPM equivalent to a count of 10, adjusted for differences in library size.
+The minimum threshold is defined as the counts-per-million (CPM) equivalent to a count of 10, adjusted for differences in library size.
 $n$ is defined as 70% of the size of the smallest group in the experimental design.
 (We set `large.n=0` to allow a barcode to be below the threshold in some of the samples of a small group.) 
 :END

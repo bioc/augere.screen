@@ -1,0 +1,53 @@
+# Normalization {.tabset}
+
+:BEGIN tmm
+We define a normalization factor for each sample with the trimmed mean of M-values (TMM) method across all barcodes.
+The assumption is that most barcodes not exhibit any differences between samples; 
+any systematic differences across many barcodes are assumed to be technical and removed.
+
+```{r}
+ysub <- edgeR::normLibSizes(y)
+y$samples$norm.factors <- ysub$samples$norm.factors
+norm.meta <- "TMM on all barcodes"
+head(y$samples)
+```
+
+The TMM normalization factors account for composition biases that are not reflected in the relative library sizes.
+Specifically, composition biases are introduced when upregulation of some genes in one sample reduces the sequencing resources available for other genes.
+This shifts the log-fold changes and causes spurious DE when that sample is compared to other samples with less upregulation.
+`r BiocStyle::Biocpkg("edgeR")` handles this by computing effective library sizes (`lib.size` scaled by `norm.factors`),
+which represent the combined effect of library size differences and composition biases.
+
+```{r}
+nf <- y$samples$norm.factors
+names(nf) <- colnames(y)
+nf <- sort(nf)
+head(nf) # samples with lowest factors have more upregulated genes
+tail(nf) # samples with highest factors have fewer upregulated genes
+```
+:END
+
+:BEGIN lib
+We perform library size normalization across all barcodes.
+This assumes that any composition biases are negligible, e.g., changes in barcode abundance are more-or-less balanced in each direction.
+
+```{r, fig.wide=TRUE}
+y$samples$norm.factors <- rep(1, nrow(y$samples))
+norm.meta <- "library size on all barcodes"
+head(y$samples)
+```
+:END
+
+We inspect the normalization results by creating MD (mean-difference) plots.
+Ideally, the log-fold changes for most barcodes should be centered around zero if the normalization was successful.
+
+```{r plot-md-norm, results="asis"}
+y.cpm <- edgeR::cpm(y, log=TRUE, prior.count=3)
+
+# Avoid creating too many plots, otherwise the compiled report is too big.
+for (i in seq_len(min(9, ncol(y.cpm)))) {
+    cat(paste0("\n\n## ", i, " {-}\n"))
+    limma::plotMD(y.cpm, column=i)
+    abline(h=0, col='red', lty=2)
+}
+```

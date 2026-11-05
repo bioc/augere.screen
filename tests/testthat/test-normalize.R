@@ -27,7 +27,7 @@ test_that("control-based normalization works as expected with only barcodes", {
     expect_true(any(grepl("norm.barcodes <-", cmds)))
     expect_false(any(grepl("norm.genes <-", cmds)))
     expect_false(any(grepl("norm.types <-", cmds)))
-    expect_true(any(grepl("calcNormFactors", cmds)))
+    expect_true(any(grepl("normLibSizes", cmds)))
 
     env <- new.env()
     env$se <- se
@@ -133,7 +133,7 @@ test_that("control-based normalization works with library sizes", {
     expect_true(any(grepl("norm.barcodes <-", cmds)))
     expect_false(any(grepl("norm.genes <-", cmds)))
     expect_false(any(grepl("norm.types <-", cmds)))
-    expect_false(any(grepl("calcNormFactors", cmds)))
+    expect_false(any(grepl("normLibSizes", cmds)))
 
     env <- new.env()
     env$se <- se
@@ -158,7 +158,7 @@ test_that("normalization on all barcodes works as expected", {
         expect_false(any(grepl("norm.barcodes <-", cmds)))
         expect_false(any(grepl("norm.genes <-", cmds)))
         expect_false(any(grepl("norm.types <-", cmds)))
-        expect_true(any(grepl("calcNormFactors", cmds)))
+        expect_true(any(grepl("normLibSizes", cmds)))
 
         env <- new.env()
         env$se <- se
@@ -182,7 +182,7 @@ test_that("normalization on all barcodes works as expected", {
         expect_false(any(grepl("norm.barcodes <-", cmds)))
         expect_false(any(grepl("norm.genes <-", cmds)))
         expect_false(any(grepl("norm.types <-", cmds)))
-        expect_false(any(grepl("calcNormFactors", cmds)))
+        expect_false(any(grepl("normLibSizes", cmds)))
 
         env <- new.env()
         env$se <- se

@@ -281,25 +281,24 @@ runScreen <- function(
         parsed[["mds-grouped"]] <- NULL
     }
 
+    voom.args <- ""
     lm.args <- character(0)
     if (!is.null(dc.block)) {
-        parsed[["voom"]] <- NULL
         replacements$DUPCOR_BLOCK <- deparseToString(dc.block)
-        lm.args <- c("block=dc.block", "correlation=dc$consensus.correlation")
-        replacements$LM_OPTS <- paste(c("", lm.args), collapse=", ")
+        voom.args <- c(voom.args, "block=dc.block")
+        lm.args <- c(lm.args, "block=dc.block", "correlation=fit$correlation")
     } else {
-        parsed[["duplicate-correlation"]] <- NULL
-        replacements$LM_OPTS <- ""
+        parsed[["duplicate-correlation-text"]] <- NULL
+        parsed[["duplicate-correlation-block"]] <- NULL
     }
 
     if (quality) {
-        replacements$VOOM_CMD <- "voomWithQualityWeights"
+        voom.args <- c(voom.args, "sample.weights=TRUE")
     } else {
-        replacements$VOOM_CMD <- "voom"
         parsed[["quality-text"]] <- NULL
     }
 
-    eb.args <- ""
+    eb.args <- character(0)
     if (trend) {
         eb.args <- c(eb.args, "trend=TRUE")
     }
@@ -312,7 +311,8 @@ runScreen <- function(
         parsed[["robust-text"]] <- NULL
     }
 
-    replacements$EB_OPTS <- paste(eb.args, collapse=", ")
+    replacements$VOOM_ARGS <- paste(voom.args, collapse=", ")
+    replacements$EB_OPTS <- paste(c("", eb.args), collapse=", ")
 
     merge.metadata <- !is.null(metadata)
     if (merge.metadata) {
@@ -378,11 +378,19 @@ runScreen <- function(
 
         if (lfc.threshold == 0) {
             copy[["lfc-contrast"]] <- NULL
+            copy[["no-lfc-contrast"]] <- replacePlaceholders(
+                copy[["no-lfc-contrast"]],
+                list(
+                    VOOM_ARGS=replacements$VOOM_ARGS,
+                    EB_OPTS=replacements$EB_OPTS
+                )
+            )
         } else {
             copy[["no-lfc-contrast"]] <- NULL
             copy[["lfc-contrast"]] <- replacePlaceholders(
                 copy[["lfc-contrast"]],
                 list(
+                    VOOM_ARGS=replacements$VOOM_ARGS,
                     EB_OPTS=replacements$EB_OPTS,
                     LFC_THRESHOLD=deparseToString(lfc.threshold)
                 )
@@ -493,7 +501,6 @@ runScreen <- function(
             copy,
             list(
                 AUTHOR=author.txt,
-                EB_OPTS=replacements$EB_OPTS,
                 CONTRAST_NAME_SIMPLE=current$title,
                 CONTRAST_NAME_DEPARSED=deparseToString(current$title),
                 CONTRAST_INDEX=i,
@@ -543,8 +550,12 @@ runScreen <- function(
         )
     }
 
+    # Strip out unnecessary cat calls due to the tabset.
+    reparsed <- readLines(fname)
+    reparsed <- sub("^    cat\\(", "    list\\(", reparsed)
+
     env <- new.env()
-    compileReport(fname, env=env, skip.chunks=skip.chunks, suppress.plots=suppress.plots)
+    compileReport(fname, env=env, skip.chunks=skip.chunks, contents=reparsed, suppress.plots=suppress.plots)
 
     gene.info <- list(
         simes=env$all.simes,
