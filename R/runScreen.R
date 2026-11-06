@@ -254,7 +254,7 @@ runScreen <- function(
         contrasts=contrasts,
         author=author
     )
-    writeRmd(common.start$text, file=fname)
+    writeRmd(common.start$text, file=fname, trailing.empty=TRUE)
     contrast.info <- common.start$contrasts
 
     norm <- .normalize(
@@ -265,7 +265,7 @@ runScreen <- function(
         norm.control.types=norm.control.types,
         norm.tmm=norm.tmm
     )
-    writeRmd(norm, file=fname, append=TRUE)
+    writeRmd(norm, file=fname, append=TRUE, trailing.empty=TRUE)
 
     ###################################
     ### Barcode-level model fitting ###
@@ -550,12 +550,8 @@ runScreen <- function(
         )
     }
 
-    # Strip out unnecessary cat calls due to the tabset.
-    reparsed <- readLines(fname)
-    reparsed <- sub("^    cat\\(", "    list\\(", reparsed)
-
     env <- new.env()
-    compileReport(fname, env=env, skip.chunks=skip.chunks, contents=reparsed, suppress.plots=suppress.plots)
+    compileReport(fname, env=env, skip.chunks=skip.chunks, suppress.plots=suppress.plots, suppress.output=TRUE)
 
     gene.info <- list(
         simes=env$all.simes,
