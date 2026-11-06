@@ -12,6 +12,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{augere.core}{\code{\link[augere.core:saveResult]{readResult}}, \code{\link[augere.core:processInputCommands]{wrapInput}}}
+  \item{augere.core}{\code{\link[augere.core:readResult]{readResult()}}, \code{\link[augere.core:wrapInput]{wrapInput()}}}
 }}
 

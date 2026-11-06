@@ -1,6 +1,6 @@
 Package: augere.screen
-Version: 0.99.2
-Date: 2026-04-12
+Version: 0.99.3
+Date: 2026-11-06
 Title: Automatic Generation of Functional Screen Analyses
 Description:
     Implements pipelines for generating functional screen analysis reports in the augere framework.
@@ -23,7 +23,6 @@ Suggests:
     BiocStyle,
     SummarizedExperiment
 VignetteBuilder: knitr    
-RoxygenNote: 7.3.3
 Encoding: UTF-8
 URL: https://github.com/augere-bioinfo/augere.screen
 BugReports: https://github.com/augere-bioinfo/augere.screen/issues
@@ -32,3 +31,4 @@ biocViews:
     ReportWriting,
     GeneTarget,
     FunctionalGenomics
+Config/roxygen2/version: 8.1.1

@@ -5,16 +5,22 @@ export(runScreen)
 export(wrapInput)
 import(augere.core)
 importFrom(S4Vectors,DataFrame)
-importFrom(augere.core,readResult)
-importFrom(augere.core,wrapInput)
-importFrom(augere.de,findSubsetGroups)
-importFrom(augere.de,processContrastMetadata)
-importFrom(augere.de,processCustomContrasts)
-importFrom(augere.de,processCustomDesignMatrix)
-importFrom(augere.de,processSimpleComparisons)
-importFrom(augere.de,processSimpleDesignMatrix)
+importFrom(augere.core,
+  readResult,
+  wrapInput
+)
+importFrom(augere.de,
+  findSubsetGroups,
+  processContrastMetadata,
+  processCustomContrasts,
+  processCustomDesignMatrix,
+  processSimpleComparisons,
+  processSimpleDesignMatrix
+)
 importFrom(edgeR,calcNormFactors)
 importFrom(limma,voom)
-importFrom(metapod,groupedHolmMin)
-importFrom(metapod,groupedSimes)
+importFrom(metapod,
+  groupedHolmMin,
+  groupedSimes
+)
 importFrom(stats,p.adjust)
